@@ -57,15 +57,20 @@ KEEP_DAYS=${BACKUP_KEEP_DAYS}
 KEEP_WEEKS=`expr $(((${BACKUP_KEEP_WEEKS} * 7) + 1))`
 KEEP_MONTHS=`expr $(((${BACKUP_KEEP_MONTHS} * 31) + 1))`
 
+if [ -n "${BACKUP_FILENAME_QUALIFIER}" ]; then
+  BACKUP_FILENAME_QUALIFIER="-${BACKUP_FILENAME_QUALIFIER}"
+fi
+
 #Initialize dirs
 mkdir -p "${BACKUP_DIR}/daily/" "${BACKUP_DIR}/weekly/" "${BACKUP_DIR}/monthly/"
 
 #Loop all databases
 for DB in ${POSTGRES_DBS}; do
+  BACKUP_FILENAME=${DB}${BACKUP_FILENAME_QUALIFIER}
   #Initialize filename vers
-  DFILE="${BACKUP_DIR}/daily/${DB}-`date +%Y%m%d-%H%M%S`.sql.gz"
-  WFILE="${BACKUP_DIR}/weekly/${DB}-`date +%G%V`.sql.gz"
-  MFILE="${BACKUP_DIR}/monthly/${DB}-`date +%Y%m`.sql.gz"
+  DFILE="${BACKUP_DIR}/daily/${BACKUP_FILENAME}-`date +%Y%m%d-%H%M%S`.sql.gz"
+  WFILE="${BACKUP_DIR}/weekly/${BACKUP_FILENAME}-`date +%G%V`.sql.gz"
+  MFILE="${BACKUP_DIR}/monthly/${BACKUP_FILENAME}-`date +%Y%m`.sql.gz"
   #Create dump
   echo "Creating dump of ${DB} database from ${POSTGRES_HOST}..."
   pg_dump -f "${DFILE}" ${POSTGRES_HOST_OPTS} ${DB}
